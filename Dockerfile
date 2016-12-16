@@ -1,9 +1,16 @@
-FROM buildpack-deps:jessie-scm
+FROM ubuntu:16.04
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-        graphviz \
-    && rm -rf /var/lib/apt/lists/*
+MAINTAINER Georgy Schapchits
+
+ENV INFLUX_MASTER_HOST localhost
+ENV KAPACITOR_HOST localhost
+ENV PORT 8084
+ENV KAPACITOR_LOG_PATH kapacitor-logs
+
+RUN apt-get update
+RUN apt-get -y upgrade
+RUN apt-get install -yq samba gettext
+RUN apt-get install -y graphviz
 
 COPY config.json clearFile.sh tickscript-studio VERSION ./
 COPY server server
@@ -12,6 +19,6 @@ COPY frontend frontend
 
 RUN chmod +x clearFile.sh
 
-EXPOSE 8081
+EXPOSE ${PORT}
 
-CMD [ "./tickscript-studio" ]
+CMD echo `envsubst < config.json` > config.json && ./tickscript-studio

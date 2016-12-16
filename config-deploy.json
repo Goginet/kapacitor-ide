@@ -1,5 +1,5 @@
 {
-  "kapacitorHost": "kapacitor:9092",
-  "kapacitorLogFolder": "/var/log/kapacitor",
+  "kapacitorHost": "${KAPACITOR_HOST}:9092",
+  "kapacitorLogFolder": "${KAPACITOR_LOG_PATH}",
   "bashPath": "/bin/bash"
 }
