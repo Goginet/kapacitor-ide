@@ -230,7 +230,12 @@ function TICKScriptTestingController($state, $uibModal, $interval, $timeout, con
     return RestService.wrapperDelete('/kapacitorLock?id='+this.userId+'&name='+this.userName)
   };
 
-  this.test = () => {
+  this.remove = () => {
+    var tickMetadata = JSON.parse(this.tickMetadata)
+    RestService.kapacitorDelete('kapacitor/v1/tasks/' + tickMetadata.id)
+  };
+
+  this.run = () => {
     if(this.tickMetadataErrorMessage != "") {
       return;
     }
@@ -239,15 +244,6 @@ function TICKScriptTestingController($state, $uibModal, $interval, $timeout, con
       return new Promise((resolve, reject) => {
         $timeout(resolve, 500);
       });
-      // return $uibModal.open({
-      //   template: waitForKapacitorModalTemplate,
-      //   backdrop: 'static',
-      //   keyboard: false,
-      //   controller: ['$timeout', '$uibModalInstance', function($timeout, $uibModalInstance) {
-      //     )
-      //   }],
-      //   size: 'md'
-      // }).result;
     };
 
     $rootScope.activeRequests.push({id:'preparingKapacitorForTest'});
@@ -276,11 +272,6 @@ function TICKScriptTestingController($state, $uibModal, $interval, $timeout, con
         return Promise.reject('lockRejected');
       }
     )
-    .then(results => {
-      return Promise.all(
-        results[0].tasks.map(x => RestService.kapacitorDelete('kapacitor/v1/tasks/'+x.id))
-      );
-    })
     .then(waitForOneSecond)
     .then(() => RestService.wrapperDelete("/kapacitorLogs"))
     .then(() => {
