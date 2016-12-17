@@ -55,11 +55,12 @@ function TICKScriptTestingController($state, $uibModal, $interval, $timeout, con
     "dbrps": [
       {
         "db": this.database,
-        "rp": ""
+        "rp": "autogen"
       }
     ],
     "script": "$SCRIPT",
-    "status": "enabled"
+    "status": "enabled",
+    "id": "test_task"
   };
 
   this.getSampleName = () => `${this.database}/${this.measurement}${this.editSampleMode ? '/custom' : ''}`;
