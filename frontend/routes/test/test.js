@@ -306,7 +306,7 @@ function TICKScriptTestingController($state, $uibModal, $interval, $timeout, con
         $interval.cancel(this.polling);
         this.polling = null;
         this.eventuallyStopPolling = null;
-      }, 1000*60);
+      }, 1000*60*10);
 
       $rootScope.activeRequests = $rootScope.activeRequests.filter(x => x.id != 'preparingKapacitorForTest');
     })
