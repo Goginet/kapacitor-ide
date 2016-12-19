@@ -236,6 +236,34 @@ function TICKScriptTestingController($state, $uibModal, $interval, $timeout, con
     RestService.kapacitorDelete('kapacitor/v1/tasks/' + tickMetadata.id)
   };
 
+  this.show = () => {
+    window.scrollTo(0,document.body.scrollHeight);
+
+    var pollForResults = () => {
+      return Promise.all([
+        RestService.wrapperPoll("/kapacitorLogs"),
+        RestService.wrapperPoll("/output"),
+        RestService.wrapperPoll("/alerts")
+      ]).then(results => {
+          var tickMetadata = JSON.parse(this.tickMetadata)
+          this.kapacitorLogs = '';
+          this.output = results[1];
+          this.alerts =  results[2];
+          this.graphUrl = '/graph.svg?cacheBust='+tickMetadata.id+"$"+Math.random();
+      });
+    };
+    pollForResults();
+
+    this.polling = $interval(pollForResults, 1000*2);
+    this.eventuallyStopPolling = $timeout(() => {
+      $interval.cancel(this.polling);
+      this.polling = null;
+      this.eventuallyStopPolling = null;
+    }, 1000*60);
+
+    $rootScope.activeRequests = $rootScope.activeRequests.filter(x => x.id != 'preparingKapacitorForTest');
+  };
+
   this.run = () => {
     if(this.tickMetadataErrorMessage != "") {
       return;
@@ -294,10 +322,11 @@ function TICKScriptTestingController($state, $uibModal, $interval, $timeout, con
           RestService.wrapperPoll("/output"),
           RestService.wrapperPoll("/alerts")
         ]).then(results => {
-            this.kapacitorLogs = results[0];
+            var tickMetadata = JSON.parse(this.tickMetadata)
+            this.kapacitorLogs = '';
             this.output = results[1];
             this.alerts =  results[2];
-            this.graphUrl = '/graph.svg?cacheBust='+Math.random();
+            this.graphUrl = '/graph.svg?cacheBust='+tickMetadata.id+"$"+Math.random();
         });
       };
       pollForResults();
@@ -307,7 +336,7 @@ function TICKScriptTestingController($state, $uibModal, $interval, $timeout, con
         $interval.cancel(this.polling);
         this.polling = null;
         this.eventuallyStopPolling = null;
-      }, 1000*60*10);
+      }, 1000*60);
 
       $rootScope.activeRequests = $rootScope.activeRequests.filter(x => x.id != 'preparingKapacitorForTest');
     })

@@ -11,6 +11,7 @@ import (
 	"os/exec"
 	"regexp"
 	"strconv"
+	"strings"
 )
 
 type tasksResult struct {
@@ -19,9 +20,15 @@ type tasksResult struct {
 
 type taskResult struct {
 	Dot string
+	Id string
 }
 
 func getGraph(response http.ResponseWriter, request *http.Request) {
+
+	// Parse task id from request
+	re := regexp.MustCompile("(\\/graph\\.svg\\?cacheBust=[^ $]*)")
+	str := re.FindString(fmt.Sprint(request))
+	taskId := strings.Replace(str, "/graph.svg?cacheBust=", "", -1)
 
 	getTasksURL := &url.URL{
 		Scheme: config["kapacitorScheme"].(string),
@@ -55,6 +62,12 @@ func getGraph(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 	dot := tasksResultInstance.Tasks[0].Dot
+	// Find dot for current task
+	for _, task := range tasksResultInstance.Tasks {
+		if task.Id == taskId {
+			dot = task.Dot
+		}
+	}
 
 	dotPreProcess := [][]string{
 		[]string{
